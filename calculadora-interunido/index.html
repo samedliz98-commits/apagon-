@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1B2A4A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Interunido">
+  <meta name="description" content="Calculadora de financiamiento Interunido">
+  <title>Calculadora Interunido</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <style>
+    :root {
+      --navy: #1B2A4A;
+      --navy-deep: #121C33;
+      --navy-soft: #2A3C63;
+      --gold: #C6A04A;
+      --gold-light: #E8D5A3;
+      --gold-press: #A98632;
+      --cream: #F4F0E8;
+      --card: #FFFFFF;
+      --text: #1B2A4A;
+      --muted: #5C677A;
+      --line: #E6E0D4;
+      --shadow: 0 8px 28px rgba(27, 42, 74, 0.08);
+      --radius: 16px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--cream);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.4;
+      min-height: 100%;
+    }
+
+    body {
+      padding-bottom: calc(28px + var(--safe-bottom));
+    }
+
+    .header {
+      background: linear-gradient(180deg, var(--navy-deep) 0%, var(--navy) 100%);
+      color: #fff;
+      padding: calc(18px + var(--safe-top)) 22px 22px;
+      position: relative;
+    }
+
+    .header::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--gold-press), var(--gold-light), var(--gold));
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      font-weight: 600;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .header p {
+      margin: 6px 0 0;
+      color: rgba(255,255,255,0.72);
+      font-size: 14px;
+    }
+
+    .wrap {
+      width: min(520px, 100%);
+      margin: 0 auto;
+      padding: 16px 16px 0;
+      display: grid;
+      gap: 14px;
+    }
+
+    .banner {
+      background: #fff8e8;
+      border: 1px solid #ead9a8;
+      color: var(--navy);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      line-height: 1.45;
+    }
+
+    .banner[hidden], .offline[hidden] { display: none; }
+
+    .banner button {
+      margin-left: auto;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1;
+      padding: 0 2px;
+      cursor: pointer;
+    }
+
+    .offline {
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gold-press);
+      font-weight: 700;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .seg {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    button.opt, button.seg-btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fbfaf7;
+      color: var(--navy);
+      border-radius: 12px;
+      min-height: 48px;
+      padding: 8px 10px;
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    button.opt {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      text-align: center;
+    }
+
+    button.opt small {
+      font-weight: 500;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    button.opt[aria-pressed="true"],
+    button.seg-btn[aria-pressed="true"] {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(27, 42, 74, 0.22);
+    }
+
+    button.opt[aria-pressed="true"] small { color: var(--gold-light); }
+
+    .custom-box { margin-top: 12px; }
+    .custom-box[hidden] { display: none; }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .field:first-child { margin-top: 0; }
+
+    .field span {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fbfaf7;
+      padding: 0 12px;
+      min-height: 48px;
+    }
+
+    .input-wrap:focus-within {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(198, 160, 74, 0.22);
+      background: #fff;
+    }
+
+    .input-wrap .prefix {
+      color: var(--muted);
+      margin-right: 6px;
+      font-weight: 650;
+    }
+
+    .input-wrap input {
+      border: 0;
+      outline: 0;
+      background: transparent;
+      width: 100%;
+      font: inherit;
+      font-size: 16px;
+      color: var(--navy);
+      min-width: 0;
+    }
+
+    .hint {
+      margin: 6px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .warn {
+      margin: 10px 0 0;
+      color: #8a3b16;
+      background: #fff1e8;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+
+    .warn[hidden] { display: none; }
+
+    .hero {
+      text-align: center;
+      padding: 8px 6px 4px;
+    }
+
+    .hero + .hero { margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+
+    .hero .kicker {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .hero .amount {
+      margin: 4px 0 0;
+      font-size: 34px;
+      font-weight: 750;
+      letter-spacing: -0.03em;
+      color: var(--navy);
+    }
+
+    .hero .sub {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .rows { margin-top: 16px; border-top: 1px solid var(--line); }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 15px;
+    }
+
+    .row .name { color: var(--muted); }
+    .row .name small {
+      display: block;
+      font-size: 11px;
+      margin-top: 1px;
+    }
+
+    .row .val { font-weight: 650; font-variant-numeric: tabular-nums; }
+
+    details.ajustes {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 4px 16px 8px;
+    }
+
+    details.ajustes summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--navy);
+      padding: 12px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    details.ajustes summary::-webkit-details-marker { display: none; }
+
+    details.ajustes summary::after {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid var(--gold);
+      border-bottom: 2px solid var(--gold);
+      transform: rotate(45deg);
+      transition: transform 0.15s ease;
+      margin-right: 4px;
+    }
+
+    details.ajustes[open] summary::after { transform: rotate(225deg); }
+
+    .reset {
+      margin: 14px 0 8px;
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 650;
+      cursor: pointer;
+      min-height: 40px;
+    }
+
+    .msg-card textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      font: inherit;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--navy);
+      background: #fbfaf7;
+      resize: vertical;
+      min-height: 132px;
+    }
+
+    .copy {
+      margin-top: 10px;
+      width: 100%;
+      min-height: 48px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--navy);
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(27, 42, 74, 0.22);
+    }
+
+    .copy.ok { background: #1e6b45; }
+
+    .foot {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 6px 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <p class="eyebrow">Bera Cars · Interunido</p>
+    <h1>Calculadora Interunido</h1>
+    <p>Inicial, gastos, seguro y cuotas a 24 meses</p>
+  </header>
+
+  <main class="wrap">
+    <div class="offline" id="offline" hidden>Sin conexión · los cálculos siguen disponibles</div>
+
+    <div class="banner" id="installBanner">
+      <div>Para usarla sin internet, ábrela en Safari, toca <strong>Compartir</strong> y luego <strong>Agregar a inicio</strong>. Entrá una vez con señal y después funciona offline.</div>
+      <button type="button" id="dismissBanner" aria-label="Cerrar">×</button>
+    </div>
+
+    <section class="card">
+      <span class="label">Vehículo</span>
+      <div class="grid-2" id="vehicleOptions"></div>
+    </section>
+
+    <section class="card">
+      <span class="label">Inicial</span>
+      <div class="seg" id="inicialOptions">
+        <button type="button" class="seg-btn" data-mode="50" aria-pressed="true">50%</button>
+        <button type="button" class="seg-btn" data-mode="40" aria-pressed="false">40%</button>
+        <button type="button" class="seg-btn" data-mode="custom" aria-pressed="false">Otro monto</button>
+      </div>
+      <div class="custom-box" id="customBox" hidden>
+        <label class="field">
+          <span>Monto de la inicial</span>
+          <div class="input-wrap"><span class="prefix">$</span><input id="customInicial" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="10.000"></div>
+        </label>
+      </div>
+      <p class="warn" id="inicialWarn" hidden></p>
+    </section>
+
+    <section class="card" id="resultado">
+      <div class="hero">
+        <div class="kicker">Total al retirar</div>
+        <div class="amount" id="totalRetirar">$0,00</div>
+        <div class="sub">Inicial, gastos de la financiadora y seguro incluidos</div>
+      </div>
+      <div class="hero">
+        <div class="kicker">Cuota mensual</div>
+        <div class="amount" id="cuota">$0,00</div>
+        <div class="sub">24 cuotas · sujeto a aprobación</div>
+      </div>
+      <div class="rows">
+        <div class="row"><span class="name" id="inicialLabel">Inicial</span><span class="val" id="inicialVal">$0,00</span></div>
+        <div class="row"><span class="name">Gastos de la financiadora</span><span class="val" id="gastosVal">$0,00</span></div>
+        <div class="row"><span class="name" id="seguroLabel">Seguro</span><span class="val" id="seguroVal">$0,00</span></div>
+        <div class="row"><span class="name">Monto financiado</span><span class="val" id="financiadoVal">$0,00</span></div>
+        <div class="row"><span class="name">Total 24 cuotas</span><span class="val" id="totalCuotasVal">$0,00</span></div>
+      </div>
+    </section>
+
+    <details class="ajustes">
+      <summary>Ajustes</summary>
+      <label class="field">
+        <span>Precio del vehículo</span>
+        <div class="input-wrap"><span class="prefix">$</span><input id="precioInput" inputmode="decimal" enterkeyhint="done" autocomplete="off"></div>
+      </label>
+      <label class="field">
+        <span id="seguroInputLabel">Seguro</span>
+        <div class="input-wrap"><span class="prefix">$</span><input id="seguroInput" inputmode="decimal" enterkeyhint="done" autocomplete="off"></div>
+        <p class="hint" id="seguroHint"></p>
+      </label>
+      <label class="field">
+        <span>Comisión (%)</span>
+        <div class="input-wrap"><input id="comisionInput" inputmode="decimal" enterkeyhint="done" autocomplete="off"></div>
+      </label>
+      <button type="button" class="reset" id="resetBtn">Restablecer valores del vehículo</button>
+    </details>
+
+    <section class="card msg-card">
+      <span class="label">Mensaje para el cliente</span>
+      <textarea id="mensaje" readonly rows="6"></textarea>
+      <button type="button" class="copy" id="copyBtn">Copiar</button>
+    </section>
+
+    <p class="foot">Los gastos de la financiadora se muestran en una sola línea. Sujeto a aprobación de Interunido.</p>
+  </main>
+
+  <script>
+    const ADMIN_PCT = 0.025;
+    const RATE = 0.02;
+    const MONTHS = 24;
+    const STORAGE_KEY = 'calculadora-interunido-v1';
+
+    const VEHICLES = {
+      livan: {
+        id: 'livan',
+        name: 'LIVAN X3 Pro Automático',
+        short: 'LIVAN',
+        sub: 'X3 Pro Automático',
+        precio: 19600,
+        comision: 4,
+        seguro: 420,
+        seguroNota: 'confirmado'
+      },
+      r7: {
+        id: 'r7',
+        name: 'Rely R7',
+        short: 'Rely R7',
+        sub: 'Precio $31.500',
+        precio: 31500,
+        comision: 4.5,
+        seguro: 650,
+        seguroNota: 'estimado 600-700'
+      },
+      r8: {
+        id: 'r8',
+        name: 'Rely R8',
+        short: 'Rely R8',
+        sub: 'Precio $34.500',
+        precio: 34500,
+        comision: 4.5,
+        seguro: 650,
+        seguroNota: 'estimado 600-700'
+      },
+      otro: {
+        id: 'otro',
+        name: 'Otro',
+        short: 'Otro',
+        sub: 'Personalizado',
+        precio: 25000,
+        comision: 4.5,
+        seguro: 650,
+        seguroNota: 'estimado'
+      }
+    };
+
+    const state = {
+      vehicleId: 'livan',
+      inicialMode: '50',
+      customInicial: '',
+      overrides: {}
+    };
+
+    function roundMoney(value) {
+      return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+    }
+
+    function formatMoney(value) {
+      const n = roundMoney(value);
+      const sign = n < 0 ? '-' : '';
+      const [intPart, decPart] = Math.abs(n).toFixed(2).split('.');
+      const withDots = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      return sign + '$' + withDots + ',' + decPart;
+    }
+
+    function parseNumber(raw) {
+      if (raw == null) return NaN;
+      let s = String(raw).trim().replace(/\s/g, '').replace(/^\$/, '');
+      if (!s) return NaN;
+      if (s.includes(',') && s.includes('.')) {
+        s = s.replace(/\./g, '').replace(',', '.');
+      } else if (s.includes(',')) {
+        s = s.replace(',', '.');
+      } else if (/^\d{1,3}(\.\d{3})+$/.test(s)) {
+        s = s.replace(/\./g, '');
+      }
+      const n = Number(s);
+      return Number.isFinite(n) ? n : NaN;
+    }
+
+    function formatPct(value) {
+      const rounded = Math.round(value * 100) / 100;
+      if (Math.abs(rounded - Math.round(rounded)) < 0.001) return String(Math.round(rounded));
+      return String(rounded).replace('.', ',');
+    }
+
+    function calcFinanciamiento(precio, inicial, comisionPct, seguro) {
+      const financiado = Math.max(0, roundMoney(precio - inicial));
+      const gastos = roundMoney(financiado * ((comisionPct / 100) + ADMIN_PCT));
+      const cuota = roundMoney(financiado * RATE / (1 - Math.pow(1 + RATE, -MONTHS)));
+      const totalRetirar = roundMoney(inicial + gastos + seguro);
+      const totalCuotas = roundMoney(cuota * MONTHS);
+      const pct = precio > 0 ? (inicial / precio) * 100 : 0;
+      return { precio, inicial, financiado, gastos, seguro, cuota, totalRetirar, totalCuotas, pct };
+    }
+
+    function currentVehicle() {
+      return VEHICLES[state.vehicleId] || VEHICLES.livan;
+    }
+
+    function currentValues() {
+      const base = currentVehicle();
+      const over = state.overrides[base.id] || {};
+      return {
+        precio: over.precio != null ? over.precio : base.precio,
+        seguro: over.seguro != null ? over.seguro : base.seguro,
+        comision: over.comision != null ? over.comision : base.comision
+      };
+    }
+
+    function currentInicial(precio) {
+      if (state.inicialMode === '40') return roundMoney(precio * 0.4);
+      if (state.inicialMode === 'custom') {
+        const typed = parseNumber(state.customInicial);
+        return Number.isFinite(typed) ? roundMoney(typed) : NaN;
+      }
+      return roundMoney(precio * 0.5);
+    }
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+        if (!saved || typeof saved !== 'object') return;
+        if (VEHICLES[saved.vehicleId]) state.vehicleId = saved.vehicleId;
+        if (saved.inicialMode === '50' || saved.inicialMode === '40' || saved.inicialMode === 'custom') {
+          state.inicialMode = saved.inicialMode;
+        }
+        if (typeof saved.customInicial === 'string') state.customInicial = saved.customInicial;
+        if (saved.overrides && typeof saved.overrides === 'object') state.overrides = saved.overrides;
+      } catch (err) {
+        /* ignore broken storage */
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        vehicleId: state.vehicleId,
+        inicialMode: state.inicialMode,
+        customInicial: state.customInicial,
+        overrides: state.overrides
+      }));
+    }
+
+    function setOverride(field, value) {
+      const id = state.vehicleId;
+      if (!state.overrides[id]) state.overrides[id] = {};
+      state.overrides[id][field] = value;
+    }
+
+    function renderVehicles() {
+      const box = document.getElementById('vehicleOptions');
+      box.innerHTML = '';
+      Object.values(VEHICLES).forEach((vehicle) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'opt';
+        btn.dataset.id = vehicle.id;
+        btn.setAttribute('aria-pressed', String(vehicle.id === state.vehicleId));
+        btn.innerHTML = vehicle.short + '<small>' + vehicle.sub + '</small>';
+        btn.addEventListener('click', () => {
+          state.vehicleId = vehicle.id;
+          saveState();
+          render();
+        });
+        box.appendChild(btn);
+      });
+    }
+
+    function buildMessage(vehicleName, totalRetirar, cuota) {
+      return vehicleName + ', financiado con Interunido:\n' +
+        '✅ Total al retirar: ' + formatMoney(totalRetirar) + ' (inicial, gastos de la financiadora y seguro incluidos)\n' +
+        '📆 Luego 24 cuotas mensuales de ' + formatMoney(cuota) + '\n' +
+        'Se lleva el vehículo ese mismo día, sujeto a aprobación.';
+    }
+
+    function render() {
+      const vehicle = currentVehicle();
+      const values = currentValues();
+      const inicial = currentInicial(values.precio);
+
+      document.querySelectorAll('#vehicleOptions .opt').forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(btn.dataset.id === state.vehicleId));
+      });
+      document.querySelectorAll('#inicialOptions .seg-btn').forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(btn.dataset.mode === state.inicialMode));
+      });
+      document.getElementById('customBox').hidden = state.inicialMode !== 'custom';
+      if (document.activeElement !== document.getElementById('customInicial')) {
+        document.getElementById('customInicial').value = state.customInicial;
+      }
+      if (document.activeElement !== document.getElementById('precioInput')) {
+        document.getElementById('precioInput').value = String(values.precio).replace('.', ',');
+      }
+      if (document.activeElement !== document.getElementById('seguroInput')) {
+        document.getElementById('seguroInput').value = String(values.seguro).replace('.', ',');
+      }
+      if (document.activeElement !== document.getElementById('comisionInput')) {
+        document.getElementById('comisionInput').value = String(values.comision).replace('.', ',');
+      }
+
+      const seguroHint = document.getElementById('seguroHint');
+      if (vehicle.seguroNota === 'confirmado') {
+        seguroHint.textContent = 'Seguro confirmado para este vehículo.';
+      } else if (vehicle.seguroNota.indexOf('600-700') !== -1) {
+        seguroHint.textContent = 'Seguro estimado entre $600 y $700. Ajusta el monto si Briceño confirma otra cifra.';
+      } else {
+        seguroHint.textContent = 'Seguro estimado. Puedes cambiar el monto.';
+      }
+
+      const warn = document.getElementById('inicialWarn');
+      if (state.inicialMode === 'custom' && !Number.isFinite(inicial)) {
+        warn.hidden = false;
+        warn.textContent = 'Escribe el monto de la inicial para ver el cálculo.';
+        document.getElementById('totalRetirar').textContent = '—';
+        document.getElementById('cuota').textContent = '—';
+        document.getElementById('inicialLabel').textContent = 'Inicial';
+        document.getElementById('inicialVal').textContent = '—';
+        document.getElementById('gastosVal').textContent = '—';
+        document.getElementById('seguroLabel').innerHTML = seguroRowLabel(vehicle, values.seguro);
+        document.getElementById('seguroVal').textContent = formatMoney(values.seguro);
+        document.getElementById('financiadoVal').textContent = '—';
+        document.getElementById('totalCuotasVal').textContent = '—';
+        document.getElementById('mensaje').value = '';
+        return;
+      }
+
+      if (inicial > values.precio) {
+        warn.hidden = false;
+        warn.textContent = 'La inicial no puede ser mayor que el precio del vehículo.';
+      } else {
+        warn.hidden = true;
+        warn.textContent = '';
+      }
+
+      const result = calcFinanciamiento(values.precio, inicial, values.comision, values.seguro);
+      document.getElementById('totalRetirar').textContent = formatMoney(result.totalRetirar);
+      document.getElementById('cuota').textContent = formatMoney(result.cuota);
+      document.getElementById('inicialLabel').textContent = 'Inicial (' + formatPct(result.pct) + '%)';
+      document.getElementById('inicialVal').textContent = formatMoney(result.inicial);
+      document.getElementById('gastosVal').textContent = formatMoney(result.gastos);
+      document.getElementById('seguroLabel').innerHTML = seguroRowLabel(vehicle, values.seguro);
+      document.getElementById('seguroVal').textContent = formatMoney(result.seguro);
+      document.getElementById('financiadoVal').textContent = formatMoney(result.financiado);
+      document.getElementById('totalCuotasVal').textContent = formatMoney(result.totalCuotas);
+      document.getElementById('mensaje').value = buildMessage(vehicle.name, result.totalRetirar, result.cuota);
+    }
+
+    function seguroRowLabel(vehicle, seguroActual) {
+      const base = VEHICLES[vehicle.id];
+      if (base.seguroNota === 'confirmado' && seguroActual === base.seguro) return 'Seguro';
+      if (seguroActual === 0) return 'Seguro <small>no incluido</small>';
+      if (base.seguroNota.indexOf('estimado') !== -1 || seguroActual !== base.seguro) {
+        return 'Seguro <small>estimado</small>';
+      }
+      return 'Seguro';
+    }
+
+    function copyMensaje() {
+      const text = document.getElementById('mensaje').value;
+      const btn = document.getElementById('copyBtn');
+      if (!text) return;
+
+      const done = () => {
+        btn.textContent = 'Copiado';
+        btn.classList.add('ok');
+        setTimeout(() => {
+          btn.textContent = 'Copiar';
+          btn.classList.remove('ok');
+        }, 1600);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(fallbackCopy);
+      } else {
+        fallbackCopy();
+      }
+
+      function fallbackCopy() {
+        const area = document.getElementById('mensaje');
+        area.removeAttribute('readonly');
+        area.focus();
+        area.select();
+        area.setSelectionRange(0, area.value.length);
+        try {
+          document.execCommand('copy');
+          done();
+        } catch (err) {
+          btn.textContent = 'Selecciona y copia';
+        }
+        area.setAttribute('readonly', 'readonly');
+      }
+    }
+
+    function bind() {
+      document.getElementById('inicialOptions').addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-mode]');
+        if (!btn) return;
+        state.inicialMode = btn.dataset.mode;
+        saveState();
+        render();
+        if (state.inicialMode === 'custom') document.getElementById('customInicial').focus();
+      });
+
+      document.getElementById('customInicial').addEventListener('input', (event) => {
+        state.customInicial = event.target.value;
+        saveState();
+        render();
+      });
+
+      document.getElementById('precioInput').addEventListener('input', (event) => {
+        const n = parseNumber(event.target.value);
+        if (Number.isFinite(n) && n >= 0) setOverride('precio', n);
+        saveState();
+        render();
+      });
+
+      document.getElementById('seguroInput').addEventListener('input', (event) => {
+        const n = parseNumber(event.target.value);
+        if (Number.isFinite(n) && n >= 0) setOverride('seguro', n);
+        saveState();
+        render();
+      });
+
+      document.getElementById('comisionInput').addEventListener('input', (event) => {
+        const n = parseNumber(event.target.value);
+        if (Number.isFinite(n) && n >= 0) setOverride('comision', n);
+        saveState();
+        render();
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', () => {
+        delete state.overrides[state.vehicleId];
+        saveState();
+        render();
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', copyMensaje);
+
+      document.getElementById('dismissBanner').addEventListener('click', () => {
+        localStorage.setItem(STORAGE_KEY + '-hide-banner', '1');
+        document.getElementById('installBanner').hidden = true;
+      });
+    }
+
+    function setupChrome() {
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      if (standalone || localStorage.getItem(STORAGE_KEY + '-hide-banner') === '1') {
+        document.getElementById('installBanner').hidden = true;
+      }
+
+      const syncOnline = () => {
+        document.getElementById('offline').hidden = navigator.onLine !== false;
+      };
+      window.addEventListener('online', syncOnline);
+      window.addEventListener('offline', syncOnline);
+      syncOnline();
+
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        });
+      }
+    }
+
+    loadState();
+    renderVehicles();
+    bind();
+    setupChrome();
+    render();
+
+    window.InterunidoCalc = {
+      VEHICLES,
+      calcFinanciamiento,
+      formatMoney,
+      parseNumber,
+      buildMessage,
+      RATE,
+      MONTHS,
+      ADMIN_PCT
+    };
+  </script>
+</body>
+</html>

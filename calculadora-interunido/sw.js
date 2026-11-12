@@ -1,4 +1,4 @@
-const CACHE_NAME = 'calculadora-interunido-v3';
+const CACHE_NAME = 'calculadora-interunido-v4';
 const ASSETS = [
   './',
   './index.html',

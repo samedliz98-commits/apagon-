@@ -517,8 +517,8 @@
         sub: 'Precio $31.500',
         precio: 31500,
         comision: 4.5,
-        seguro: 650,
-        seguroNota: 'estimado 600-700'
+        seguro: 580,
+        seguroNota: 'confirmado'
       },
       r8: {
         id: 'r8',
@@ -527,8 +527,8 @@
         sub: 'Precio $34.500',
         precio: 34500,
         comision: 4.5,
-        seguro: 650,
-        seguroNota: 'estimado 600-700'
+        seguro: 580,
+        seguroNota: 'confirmado'
       },
       otro: {
         id: 'otro',
@@ -624,7 +624,14 @@
           state.inicialMode = saved.inicialMode;
         }
         if (typeof saved.customInicial === 'string') state.customInicial = saved.customInicial;
-        if (saved.overrides && typeof saved.overrides === 'object') state.overrides = saved.overrides;
+        if (saved.overrides && typeof saved.overrides === 'object') {
+          state.overrides = saved.overrides;
+          ['r7', 'r8'].forEach((id) => {
+            if (state.overrides[id] && state.overrides[id].seguro === 650) {
+              delete state.overrides[id].seguro;
+            }
+          });
+        }
       } catch (err) {
         /* ignore broken storage */
       }

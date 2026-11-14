@@ -210,6 +210,45 @@
 
     .field:first-child { margin-top: 0; }
 
+    .price-field {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    label.price-field > span {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .price-field .input-wrap {
+      min-height: 64px;
+      padding: 0 14px;
+    }
+
+    .price-field .input-wrap .prefix {
+      font-size: 22px;
+      color: var(--navy);
+    }
+
+    .price-field .input-wrap input {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .price-field.is-any .input-wrap {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(198, 160, 74, 0.28);
+      background: #fff;
+    }
+
+    button.opt[data-id="otro"] {
+      grid-column: 1 / -1;
+    }
+
     .field span {
       font-size: 13px;
       color: var(--muted);
@@ -373,6 +412,7 @@
       background: #fbfaf7;
       resize: vertical;
       min-height: 132px;
+      overflow: hidden;
     }
 
     .copy {
@@ -418,6 +458,11 @@
     <section class="card">
       <span class="label">Vehículo</span>
       <div class="grid-2" id="vehicleOptions"></div>
+      <label class="field price-field" id="precioField">
+        <span>Precio del vehículo</span>
+        <div class="input-wrap"><span class="prefix">$</span><input id="precioInput" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="25.000"></div>
+        <p class="hint" id="precioHint">Puedes cambiar este precio. El cálculo se actualiza al instante.</p>
+      </label>
     </section>
 
     <section class="card">
@@ -458,10 +503,6 @@
 
     <details class="ajustes">
       <summary>Ajustes</summary>
-      <label class="field">
-        <span>Precio del vehículo</span>
-        <div class="input-wrap"><span class="prefix">$</span><input id="precioInput" inputmode="decimal" enterkeyhint="done" autocomplete="off"></div>
-      </label>
       <label class="field">
         <span id="seguroInputLabel">Seguro</span>
         <div class="input-wrap"><span class="prefix">$</span><input id="seguroInput" inputmode="decimal" enterkeyhint="done" autocomplete="off"></div>
@@ -532,9 +573,9 @@
       },
       otro: {
         id: 'otro',
-        name: 'Otro',
-        short: 'Otro',
-        sub: 'Personalizado',
+        name: 'Cualquier vehículo',
+        short: 'Otro precio',
+        sub: 'Cualquier vehículo',
         precio: 25000,
         comision: 4.5,
         seguro: 650,
@@ -565,10 +606,24 @@
       if (raw == null) return NaN;
       let s = String(raw).trim().replace(/\s/g, '').replace(/^\$/, '');
       if (!s) return NaN;
-      if (s.includes(',') && s.includes('.')) {
-        s = s.replace(/\./g, '').replace(',', '.');
-      } else if (s.includes(',')) {
-        s = s.replace(',', '.');
+      const hasComma = s.includes(',');
+      const hasDot = s.includes('.');
+      if (hasComma && hasDot) {
+        // El último separador es el decimal: 25.000,50 o 25,000.50.
+        if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+          s = s.replace(/\./g, '').replace(',', '.');
+        } else {
+          s = s.replace(/,/g, '');
+        }
+      } else if (hasComma) {
+        if (/^\d{1,3}(,\d{3})+$/.test(s)) {
+          s = s.replace(/,/g, '');
+        } else if (/^\d{1,3}(,\d{3})*,\d{1,2}$/.test(s)) {
+          const cut = s.lastIndexOf(',');
+          s = s.slice(0, cut).replace(/,/g, '') + '.' + s.slice(cut + 1);
+        } else {
+          s = s.replace(',', '.');
+        }
       } else if (/^\d{1,3}(\.\d{3})+$/.test(s)) {
         s = s.replace(/\./g, '');
       }
@@ -667,9 +722,27 @@
           state.vehicleId = vehicle.id;
           saveState();
           render();
+          if (vehicle.id === 'otro') focusPrecio();
         });
         box.appendChild(btn);
       });
+    }
+
+    function focusPrecio() {
+      const input = document.getElementById('precioInput');
+      input.focus();
+      input.select();
+      const field = document.getElementById('precioField');
+      if (field && field.scrollIntoView) {
+        field.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+    }
+
+    function fitMensaje() {
+      const area = document.getElementById('mensaje');
+      area.style.height = 'auto';
+      const border = area.offsetHeight - area.clientHeight;
+      area.style.height = Math.max(area.scrollHeight + border, 132) + 'px';
     }
 
     function buildMessage(vehicleName, totalRetirar, cuota) {
@@ -691,6 +764,10 @@
         btn.setAttribute('aria-pressed', String(btn.dataset.mode === state.inicialMode));
       });
       document.getElementById('customBox').hidden = state.inicialMode !== 'custom';
+      document.getElementById('precioField').classList.toggle('is-any', state.vehicleId === 'otro');
+      document.getElementById('precioHint').textContent = state.vehicleId === 'otro'
+        ? 'Cualquier vehículo. La comisión y el seguro se ajustan en Ajustes.'
+        : 'Puedes cambiar este precio. El cálculo se actualiza al instante.';
       if (document.activeElement !== document.getElementById('customInicial')) {
         document.getElementById('customInicial').value = state.customInicial;
       }
@@ -727,6 +804,7 @@
         document.getElementById('financiadoVal').textContent = '—';
         document.getElementById('totalCuotasVal').textContent = '—';
         document.getElementById('mensaje').value = '';
+        fitMensaje();
         return;
       }
 
@@ -749,6 +827,7 @@
       document.getElementById('financiadoVal').textContent = formatMoney(result.financiado);
       document.getElementById('totalCuotasVal').textContent = formatMoney(result.totalCuotas);
       document.getElementById('mensaje').value = buildMessage(vehicle.name, result.totalRetirar, result.cuota);
+      fitMensaje();
     }
 
     function seguroRowLabel(vehicle, seguroActual) {
